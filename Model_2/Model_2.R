@@ -8,8 +8,8 @@ library(foreach)
 library(doParallel)
 
 # Functions
-source("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code/Model_2/functions_2.R")
-source("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code/interpolate.R")
+source("Model_2/functions_2.R")
+source("interpolate.R")
 
 ########################################### Parallel processing #############################################
 
@@ -122,6 +122,6 @@ opt.plot.2b <- opt.plot(d.opt.2b)
 sim.2b <- sim(d.opt.2b, 10, 5, 10, 4, 2, 1, 1, 1, 15, 5, 0.2, 2, 2, 0.5, 100)
 sim.2b
 
-save(d.opt.2b, file = "d.opt.2b.RData")
-save(opt.plot.2b, file = "opt.plot.2b.RData")
-save(sim.2b, file = "sim.2b.RData")
+save(d.opt.2b, file = "Model_2/d.opt.2b.RData")
+save(opt.plot.2b, file = "Model_2/opt.plot.2b.RData")
+save(sim.2b, file = "Model_2/sim.2b.RData")

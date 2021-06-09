@@ -6,8 +6,8 @@ library(reshape2)
 library(utils)
 
 # Functions
-source("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code/Model_1/functions_1.R")
-source("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code/interpolate.R")
+source("Model_1/functions_1.R")
+source("interpolate.R")
 
 ########################################## Look-ahead function ##########################################
 
@@ -110,6 +110,6 @@ d.opt.1a <- opt(10, 5, 10, 4, 2, 1, 1, 1, 15, 4, 4, 5, 1, 0.2, 2, 2, 0.5)
 opt.plot.1a <- opt.plot(d.opt.1a)
 sim.1a <- sim(10, 5, 10, 4, 2, 1, 1, 1, 15, 5, 0.2, 2, 2, 0.5, 100)
 
-save(d.opt.1a, file = "d.opt.1a.RData")
-save(opt.plot.1a, file = "opt.plot.1a.RData")
-save(sim.1a, file = "sim.1a.RData")
+save(d.opt.1a, file = "Model_1/d.opt.1a.RData")
+save(opt.plot.1a, file = "Model_1/opt.plot.1a.RData")
+save(sim.1a, file = "Model_1/sim.1a.RData")

@@ -6,8 +6,8 @@ library(reshape2)
 library(utils)
 
 # Functions
-source("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code/Model_3/functions_3.R")
-source("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code/interpolate.R")
+source("Model_3/functions_3.R")
+source("interpolate.R")
 
 ########################################## Data frame for events and parameters ##########################################
 
@@ -100,6 +100,6 @@ opt.plot.3a
 sim.3a <- sim(d.opt.3a, i = 2, j = 3, k = 3, l = 2, I = 100)
 sim.3a
 
-save(d.opt.3a, file = "d.opt.3a.RData")
-save(opt.plot.3a, file = "opt.plot.3a.RData")
-save(sim.3a, file = "sim.3a.RData")
+save(d.opt.3a, file = "Model_3/d.opt.3a.RData")
+save(opt.plot.3a, file = "Model_3/opt.plot.3a.RData")
+save(sim.3a, file = "Model_3/sim.3a.RData")
