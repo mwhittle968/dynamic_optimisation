@@ -1,4 +1,5 @@
-# Dynamic optimisation model with dynamic programming
+
+############################################### Dynamic optimisation model with dynamic programming ###############################################
 
 ###################################################################################################################################################
 
@@ -121,8 +122,7 @@ for (t in (T-1):1){ # Iterates backwards in time
   }
 }
 assign(paste("d.opt.", model.name, sep = ""), d.opt)
-get(paste("d.opt.", model.name, sep = "")) %>%
-save(file = paste("Model_3/d.opt.", model.name, ".RData", sep = ""))
+do.call(save, list(paste("d.opt.", model.name, sep = ""), file = paste("Model_3/d.opt.", model.name, ".RData", sep = "")))
 
 ############################################################# Optimisation array plot ############################################################
 
@@ -135,41 +135,50 @@ d.opt. <- melt(d.opt)
     theme(axis.title.y.right = element_text("Nh"),
           axis.title.x.top = element_text("Ns"))
 assign(paste("d.opt.plot.", model.name, sep = ""), d.opt.plot)
-get(paste("d.opt.plot.", model.name, sep = "")) %>%
-save(file = paste("Model_3/d.opt.plot.", model.name, ".RData", sep = ""))
+do.call(save, list(paste("d.opt.plot.", model.name, sep = ""), file = paste("Model_3/d.opt.plot.", model.name, ".RData", sep = "")))
 
 ################################################################### Simulations ##################################################################
 
-sim.plot <- ggplot(NULL, aes(x = time.step, y = sym.pop)) # empty plot to be populated with simulation runs
+sim.data <- data.frame(sim = integer(), time.step = integer(), nh.reserves = integer(), ns.reserves = integer(), sym.pop = integer(), decision = integer())
 for (q in 1:Q){
-sim <- data.frame(time.step = integer(), nh.reserves = integer(), ns.reserves = integer(), sym.pop = integer(), decision = integer())%>%
-# empty data frame to be populated with state values and allocations
-add_row(time.step = 1,  nh.reserves = chop(round(rnorm(1, mean = (nh.max), sd = 1)), 0, nh.max),
-        ns.reserves = chop(round(rnorm(1, mean = (ns.max), sd = 1)), 0, ns.max),
-        sym.pop = chop(round(rnorm(1, mean = (s.max/5), sd = 1)), 0, s.max), decision = NA) # initial state values chosen at random
-for (t in 1:(T-1)){
-  if (sim$nh.reserves[t] >= F$nh.crit[t]){
-    d = interpolate(d.opt, chop(sim$nh.reserves[t], 1, nh.max), chop(sim$ns.reserves[t], 1, ns.max), chop(sim$sym.pop[t], 1, s.max), t)
-    sim$decision[t] = d
-    nh. = as.numeric(new.state(sim$nh.reserves[t], sim$ns.reserves[t], sim$sym.pop[t], t, d)[1])
-    ns. = as.numeric(new.state(sim$nh.reserves[t], sim$ns.reserves[t], sim$sym.pop[t], t, d)[2])
-    s. = as.numeric(new.state(sim$nh.reserves[t], sim$ns.reserves[t], sim$sym.pop[t], t, d)[3])
-    sim <- add_row(sim, time.step = (t+1), nh.reserves = nh., ns.reserves = ns., sym.pop = s., decision = NA) # populate data frame with new state values
-    }
-  else {
-    break # if reserves get to zero, stop the simulation
+  sim.data <- add_row(sim.data, sim = q, time.step = 1, nh.reserves = chop(round(rnorm(1, mean = (nh.max), sd = 1)), 0, nh.max),
+                      ns.reserves = chop(round(rnorm(1, mean = (ns.max), sd = 1)), 0, ns.max),
+                      sym.pop = chop(round(rnorm(1, mean = (s.max/5), sd = 1)), 0, s.max), decision = NA)
+  for (t in 1:(T-1)){
+    sim.q <- filter(sim.data, sim == q)
+    if (sim.q$nh.reserves[t] >= F$nh.crit[t]){
+    d = interpolate(d.opt, chop(sim.q$nh.reserves[t], 1, nh.max), chop(sim.q$ns.reserves[t], 1, ns.max), chop(sim.q$sym.pop[t], 1, s.max), t)
+    sim.q$decision[t] = d
+    nh. = as.numeric(new.state(sim.q$nh.reserves[t], sim.q$ns.reserves[t], sim.q$sym.pop[t], t, d)[1])
+    ns. = as.numeric(new.state(sim.q$nh.reserves[t], sim.q$ns.reserves[t], sim.q$sym.pop[t], t, d)[2])
+    s. = as.numeric(new.state(sim.q$nh.reserves[t], sim.q$ns.reserves[t], sim.q$sym.pop[t], t, d)[3])
+    sim.data <- add_row(sim.data, sim = q, time.step = (t+1), nh.reserves = nh., ns.reserves = ns., sym.pop = s., decision = NA)
+    } else {
+    break
+  }
   }
 }
-sim.plot <- sim.plot+
-geom_line(data = sim, aes(x = time.step, y = sym.pop, group = 1)) # add data frame to plot
-}
-sim.plot <- sim.plot+
+assign(paste("sim.data.", model.name, sep = ""), sim.data)
+do.call(save, list(paste("sim.data.", model.name, sep = ""), file = paste("Model_3/sim.data.", model.name, ".RData", sep = "")))
+
+sim.plot <- ggplot(data = sim.data, aes(x = time.step, y = sym.pop, group = sim))+
+  geom_line()+
   labs(x = "time step", y = "symbiont density")
 assign(paste("sim.plot.", model.name, sep = ""), sim.plot)
-get(paste("sim.plot.", model.name, sep = "")) %>%
-save(file = paste("Model_3/sim.plot.", model.name, ".RData", sep = ""))
+do.call(save, list(paste("sim.plot.", model.name, sep = ""), file = paste("Model_3/sim.plot.", model.name, ".RData", sep = "")))
 
-################################################################################################################################################
+################################################################### Model fit ##################################################################
+
+load("Model_3/Obs.F.data.Rdata")
+
+sum.squares <- data.frame(value = integer())
+for (q in 1:Q){
+  sim.q <- filter(sim.data, sim == q)
+  Exp.F.data = interp1(sim.q$time.step, sim.q$sym.pop, Obs.F.data$time.step)
+  value = (Exp.F.data-Obs.F.data$W.density)^2
+  sum.sqaures <- rbind(sum.squares, value)
+}
+Exp.F.data
 
 #print(proc.time() - ptm)
 }

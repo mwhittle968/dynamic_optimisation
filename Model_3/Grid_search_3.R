@@ -2,12 +2,12 @@
 
 # Set working directory
 setwd("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/R_code")
-# setwd(working directory for laptop)
 
 # Packages
 library(tidyverse)
 library(reshape2)
 library(utils)
+library(pracma)
 
 # Functions
 source("Model_3/Model_3.R")
@@ -25,3 +25,4 @@ for (a in 1:5){
     }
   }
 }
+dynamic.optimisation.3("b", i = 0.01, j = 1, k = 1, l = 0.2)
