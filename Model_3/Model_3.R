@@ -6,10 +6,9 @@
 dynamic.optimisation.3 <- function(model.name, nh.max = 20, ns.max = 5, s.max = 20, nh.repro = 8, ns.repro = 3, s.repro = 7, nh.crit.pupae = 4, nh.crit.adult = 4,
                                    nh.larva = 0.6, ns.larva = 0.6, mh.pupae = 1, mh.adult = 2, ms.pupae = 2, ms.adult = 2, ex.surv.pupae = 1, ex.surv.adult = (1 - 1/61),
                                    T = 61, n = 5, m = 1, i, j, k, l, Q = 100){
-source("interpolate.R")
-#ptm <- proc.time()
+ptm <- proc.time()
 
-###################################################### Data frames for events and parameters ######################################################
+####################################################### Data frames for events and parameters ######################################################
 
 parameters <- c(model.name, nh.max, ns.max, s.max, nh.repro, ns.repro, s.repro, nh.crit.pupae, nh.crit.adult, nh.larva, ns.larva,
                 mh.pupae, mh.adult, ms.pupae, ms.adult, ex.surv.pupae, ex.surv.adult, T, n, m, i, j, k, l, Q)
@@ -27,7 +26,7 @@ F <- as.data.frame(time.step)%>%
   mutate(ex.surv = ifelse(stage == "pupae", ex.surv.pupae, ex.surv.adult))%>%
   mutate(nh.crit = ifelse(stage == "pupae", nh.crit.pupae, nh.crit.adult))
 
-###################################################### Functions ######################################################
+#################################################################### Functions ######################################################
 
 # Chop function limits the range of values the state variables can take:
 chop <- function(x, x.min, x.max){
@@ -137,7 +136,7 @@ d.opt. <- melt(d.opt)
 assign(paste("d.opt.plot.", model.name, sep = ""), d.opt.plot)
 do.call(save, list(paste("d.opt.plot.", model.name, sep = ""), file = paste("Model_3/d.opt.plot.", model.name, ".RData", sep = "")))
 
-################################################################### Simulations ##################################################################
+################################################################## Simulations ##################################################################
 
 sim.data <- data.frame(sim = integer(), time.step = integer(), nh.reserves = integer(), ns.reserves = integer(), sym.pop = integer(), decision = integer())
 for (q in 1:Q){
@@ -148,7 +147,7 @@ for (q in 1:Q){
     sim.q <- filter(sim.data, sim == q)
     if (sim.q$nh.reserves[t] >= F$nh.crit[t]){
     d = interpolate(d.opt, chop(sim.q$nh.reserves[t], 1, nh.max), chop(sim.q$ns.reserves[t], 1, ns.max), chop(sim.q$sym.pop[t], 1, s.max), t)
-    sim.q$decision[t] = d
+    sim.data$decision[sim.data$sim == q & sim.data$time.step == t] <- d
     nh. = as.numeric(new.state(sim.q$nh.reserves[t], sim.q$ns.reserves[t], sim.q$sym.pop[t], t, d)[1])
     ns. = as.numeric(new.state(sim.q$nh.reserves[t], sim.q$ns.reserves[t], sim.q$sym.pop[t], t, d)[2])
     s. = as.numeric(new.state(sim.q$nh.reserves[t], sim.q$ns.reserves[t], sim.q$sym.pop[t], t, d)[3])
@@ -169,17 +168,15 @@ do.call(save, list(paste("sim.plot.", model.name, sep = ""), file = paste("Model
 
 ################################################################### Model fit ##################################################################
 
-load("Model_3/Obs.F.data.Rdata")
-
-sum.squares <- data.frame(value = integer())
+squares <- vector()
 for (q in 1:Q){
   sim.q <- filter(sim.data, sim == q)
-  Exp.F.data = interp1(sim.q$time.step, sim.q$sym.pop, Obs.F.data$time.step)
-  value = (Exp.F.data-Obs.F.data$W.density)^2
-  sum.sqaures <- rbind(sum.squares, value)
+  Obs <- filter(Obs.F.data, time.step <= max(sim.q$time.step))
+  Exp.density <- interp1(sim.q$time.step, sim.q$sym.pop, Obs$time.step)
+  values <- (Exp.density-Obs$W.density)^2
+  squares <- c(squares, values)
 }
-Exp.F.data
-
-#print(proc.time() - ptm)
+rss <- mean(squares)
+save(rss, file = paste("Model_3/rss.", model.name, ".RData", sep = ""))
+print(proc.time() - ptm)
 }
-

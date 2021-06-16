@@ -1,0 +1,25 @@
+model.name <- "test"
+nh.max <- 20
+ns.max <- 5
+s.max <- 20
+nh.repro <- 8
+ns.repro <- 3
+s.repro <- 7
+nh.crit.pupae <- 4
+nh.crit.adult <- 4
+nh.larva <- 0.6
+ns.larva <- 0.6
+mh.pupae <- 1
+mh.adult <- 2
+ms.pupae <- 2
+ms.adult <- 2
+ex.surv.pupae <- 1
+ex.surv.adult <- 1 - 1/61
+T <- 61
+n <- 5
+m <- 1
+i <- 0.02
+j <- 4
+k <- 4
+l <- 0.5
+Q <- 100
