@@ -10,10 +10,10 @@ library(ggplot2)
 
 ###################################################################################################################################################
 
-dynamic.optimisation <- function(model.name, nh.max = 20, ns.max = 5, s.max = 20, nh.repro = 8, ns.repro = 3, s.repro = 7, nh.crit.pupae = 4, nh.crit.adult = 4,
-                                   nh.larva = 0.6, ns.larva = 0.6, mh.pupae = 1, mh.adult = 2, ms.pupae = 2, ms.adult = 2, ex.surv.pupae = 1, ex.surv.adult = (1 - 1/61),
+dynamic.optimisation <- function(model.name, nh.max = 20, ns.max = 5, s.max = 20, nh.repro = 7, ns.repro = 3, s.repro = 6, nh.crit.pupae = 4, nh.crit.adult = 4,
+                                   nh.larva = 0.6, ns.larva = 0.6, mh.pupae = 0.3, mh.adult = 1, ms.pupae = 1, ms.adult = 1, ex.surv.pupae = 1, ex.surv.adult = (1 - 1/61),
                                    T = 61, n = 5, m = 1, i, j, k, l, Q = 100){
-ptm <- proc.time()
+#ptm <- proc.time()
 
 ####################################################### Data frames for events and parameters ######################################################
 
@@ -120,10 +120,6 @@ for (t in (T-1):1){ # Iterates backwards in time
   for (nh in 1:nh.max){
     for (ns in 1:ns.max){
       for (s in 1:s.max){
-#        print("nh, ns, s =")
-#        print(nh)
-#        print(ns)
-#        print(s)
         H = array(data = NA, dim = (2*n+1)) # Empty reproductive value array (for one state)
         for (d in 1:(2*n+1)){
           nh. = as.numeric(new.state(nh, ns, s, t, d)[1]) # Calculate new values for states
@@ -131,14 +127,8 @@ for (t in (T-1):1){ # Iterates backwards in time
           s. = as.numeric(new.state(nh, ns, s, t, d)[3])
           H[d] = B(nh, ns, s, t) + S(nh., t)*interpolate(V, chop(nh., 0, nh.max), chop(ns., 0, ns.max), chop(s., 0, s.max), (t+1))
         }
-#        print("H =")
-#        print(H)
         V[t, nh, ns, s] <- max(H) # define fitness as maximum of the reproductive values
-#        print("V =")
-#        print(V[t])
         d.opt[t, nh, ns, s] <- which.max(H) # Set best decision as the one which maximises fitness
-#        print("which.max(H) =")
-#        print(which.max(H))
         setTxtProgressBar(pb, (s-1) + (ns-1)*s.max + (nh-1)*ns.max*s.max + (T-t-1)*nh.max*ns.max*s.max)
       }
     }
