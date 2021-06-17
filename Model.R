@@ -129,7 +129,7 @@ for (t in (T-1):1){ # Iterates backwards in time
           nh. = as.numeric(new.state(nh, ns, s, t, d)[1]) # Calculate new values for states
           ns. = as.numeric(new.state(nh, ns, s, t, d)[2])
           s. = as.numeric(new.state(nh, ns, s, t, d)[3])
-          H[d] = B(nh, ns, s, t) + S(nh., t)*interpolate(V, chop(nh., 1, nh.max), chop(ns., 1, ns.max), chop(s., 1, s.max), (t+1))
+          H[d] = B(nh, ns, s, t) + S(nh., t)*interpolate(V, chop(nh., 0, nh.max), chop(ns., 0, ns.max), chop(s., 0, s.max), (t+1))
         }
 #        print("H =")
 #        print(H)

@@ -26,5 +26,3 @@ for (a in 1:5){
   }
 }
 model.fit <- arrange(model.fit, model.rss)
-
-dynamic.optimisation("test.2", i = 0.1, j = 2, k = 2, l = 1)

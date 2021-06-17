@@ -1,5 +1,8 @@
 # function for trilinear interpolation of values from array, using the new values of state variables as input
 interpolate <- function(array, x, y, z, t){
+  if(x < 1 | y < 1 | z < 1){
+    d = 0
+  } else {
   x.i = floor(x)
   x.ii = ceiling(x)
   y.i = floor(y)
@@ -37,6 +40,7 @@ interpolate <- function(array, x, y, z, t){
       d.i = d.i.i*(1-y.d) + d.ii.i*y.d
       d.ii = d.i.ii*(1-y.d) + d.ii.ii*y.d
       d = d.i*(1-z.d) + d.ii*z.d
-     }
+    }
+  }
   return(d)
 }
