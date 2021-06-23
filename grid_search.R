@@ -5,7 +5,6 @@ setwd("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Mod
 
 # Source code
 source("Model.R")
-source("interpolate.R")
 
 # Create a dataframe for rss values
 model.fit <- data.frame(model = character(), model.rss = integer())
@@ -20,7 +19,7 @@ for (a in 1:5){
     for (c in 1:3){
       model.name = paste("5", a, b, c, sep = "")
       print(model.name)
-      dynamic.optimisation(model.name, i = I[a], j = J[b], k = K[b], l = L[c])
+      dynamic.optimisation("6", model.name, i = I[a], j = J[b], k = K[b], l = L[c])
       load(paste("Model_5/rss.", model.name, ".RData", sep = ""))
       model.fit <- add_row(model.fit, model = model.name, model.rss = rss)
     }

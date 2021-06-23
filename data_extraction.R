@@ -2,7 +2,6 @@
 
 library(metaDigitise)
 library(dplyr)
-#library(ggplot2)
 
 data <- metaDigitise("C:/Users/mw14794/OneDrive - University of Bristol/Documents/PhD/Notes/Model/Data")
 2
@@ -13,9 +12,6 @@ W.density <- c(data$mean[2], data$mean[4], data$mean[6], data$mean[8], data$mean
 day <- c(data$mean[1], data$mean[3], data$mean[5], data$mean[7], data$mean[9], data$mean[11], data$mean[13], data$mean[15])
 
 Obs.F.data <- data.frame(stages, day, W.density) %>%
-  mutate(time.step = day/(9/4))
+  mutate(time.step = (day-39)/(9/4)) %>%
+  filter(time.step >= 1)
 save(Obs.F.data, file = "Obs.F.data.Rdata")
-
-#Obs.F.plot <- ggplot(data = Obs.F.data, aes(x = time.step, y = W.density))+
-#  geom_line()
-#Obs.F.plot
