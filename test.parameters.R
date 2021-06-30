@@ -1,3 +1,4 @@
+model.version <- "6"
 model.name <- "test"
 nh.max <- 20
 ns.max <- 5
@@ -5,21 +6,24 @@ s.max <- 20
 nh.repro <- 8
 ns.repro <- 3
 s.repro <- 7
-nh.crit.pupae <- 4
-nh.crit.adult <- 4
-nh.larva <- 0.6
-ns.larva <- 0.6
-mh.pupae <- 1
-mh.adult <- 2
-ms.pupae <- 2
-ms.adult <- 2
-ex.surv.pupae <- 1
-ex.surv.adult <- 1 - 1/61
-T <- 61
+nh.crit <- 4
+#nh.crit.pupae <- 4
+#nh.crit.adult <- 4
+nh.transfer <- 0.6
+nh.exp <- 1
+#mh.pupae <- 1
+#mh.adult <- 2
+#ms.pupae <- 2
+#ms.adult <- 2
+#ex.surv.pupae <- 1
+#ex.surv.adult <- 1 - 1/48
+ex.surv <- 1 - 1/48 
+T <- 48
+N <- 5
 n <- 5
 m <- 1
 i <- 0.1
 j <- 2
 k <- 2
-l <- 1
+#l <- 1
 Q <- 100
