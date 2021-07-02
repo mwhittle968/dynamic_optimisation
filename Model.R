@@ -17,9 +17,8 @@ load("rio.female.RData")
 
 ###################################################################################################################################################
 
-dynamic.optimisation <- function(model.version, model.name, nh.max = 20, s.max = 20, nh.repro = 7, s.repro = 6, nh.crit = 4,
-                                 nh.transfer = 0.6, nh.exp = 1, ex.surv = (1 - 1/48), T = 48, N = 5, n = 5, m = 1,
-                                 i = 0.1, j = 2, k = 2, Q = 100){
+dynamic.optimisation <- function(model.version, model.name, nh.max = 20, s.max = 20, nh.repro = 7, s.repro = 6, nh.crit = 4, nh.transfer = 0.6,
+                                 ex.surv = (1 - 1/48), T = 48, N = 100, n = 10, i = 0.1, j = 2, k = 2, Q = 100){
 
 # model.version : character string for version of model e.g "6"
 # model.name : character string for name of model
@@ -29,7 +28,7 @@ dynamic.optimisation <- function(model.version, model.name, nh.max = 20, s.max =
 # s.repro : minimum level of s for an immediate contribution to fitness
 # nh.crit : minimum level of nh for survival
 # nh.transfer : proportion of nh transferred to larva / spent on reproduction
-# nh.exp : decrease in nh due to background metabolic expenditure
+# nh.exp[t] : decrease in nh due to background metabolic expenditure, time dependant
 # ex.surv : extrinsic (state-independent) probability of survival
 # T : time horizon / host life expectancy
 # N : number of resources gained during feeding  
@@ -40,7 +39,7 @@ dynamic.optimisation <- function(model.version, model.name, nh.max = 20, s.max =
 # k : amount of symbiont density removed (s per resource invested)
 # Q : number of iterations for simulation
   
-#ptm <- proc.time()
+ptm <- proc.time()
   
 ########################################################## Folder to save model outputs #########################################################
 
@@ -48,11 +47,15 @@ dir.create(paste("Model_", model.version, sep = ""))
 
 ####################################################### Vector of reproductive events ############################################################
 
-# Vector of time steps and if the female reproduces or not; yes = reproductive time step
+# Vector of time steps, metabolic expenditure, and if the female reproduces or not; yes = reproductive time step
 # 1st reproductive event at t = 8, and every 4 time steps thereafter
 repro <- c(1:T)
 for (t in 1:T){
   repro[t] <- ifelse(t != 4 & t%%4 == 0, "yes", "no")
+}
+nh.exp <- c(1:T)
+for (t in 1:T){
+  nh.exp[t] <- ifelse(t <= 5, 2, ifelse(t <= 10, 1.5, 1))
 }
 
 #################################################################### Functions ###################################################################
@@ -75,8 +78,11 @@ immediate.fitness <- function(t, nh, s){
   if (repro[t] == "no" | nh < nh.repro | s < s.repro){
     B = 0 # If it's a non-reproductive time step, or states are insufficient, the contribution to fitness is zero
   } else {# If it's a reproductive time step and the states are sufficient, the fitness is calculated by reserves transferred to larva
-    nh.larva = (nh-nh.exp)*nh.transfer # After metabolic expenditure, female transfers some of her reserves and symbiont to larva
-    B = (m*nh.larva)-m*(nh.repro-nh.exp)*nh.transfer # Fitness is linear by nh.larva, and zero when nh = nh.repro
+    nh.larva = (nh-nh.exp[t])*nh.transfer # After metabolic expenditure, female transfers some of her reserves and symbiont to larva
+    nh.larva.min = (nh.repro-nh.exp[t])*nh.transfer
+    Bh = 1/(1+exp(nh.larva.min-nh.larva)) # Fitness is logistic by nh.larva and s
+    Bs = 1/(1+exp(s.repro-s))
+    B = Bh*Bs
   }
   return(B)
 }
@@ -100,16 +106,16 @@ decrease <- function(s, d){
 # New state variables:
 new.state <- function(nh, s, t, d){
   # If it's a reproductive time step and states are sufficient, reserves are transferred to larva
-  nh.larva = ifelse(repro[t] == "no" | nh < nh.repro, 0, (nh - nh.exp)*nh.transfer)
+  nh.larva = ifelse(repro[t] == "no" | nh < nh.repro, 0, (nh - nh.exp[t])*nh.transfer)
   if (d == 1){ 
-    new.nh = chop((nh - nh.larva - nh.exp + N - maintenance(s)), 0, nh.max)
+    new.nh = chop(nh - nh.larva - nh.exp[t] + (N - maintenance(s))/20, 0, nh.max)
     new.s = s # If d = 1, there is no investment into changing s
   } else if (d > 1 & d <= (n+1)){ 
-    new.nh = chop((nh - nh.exp - nh.larva + N - maintenance(s) - (d-1)), 0, nh.max)
-    new.s = chop((increase(s, d)), 0, s.max) # If d is between 2 and n+1, there is investment into increasing s
+    new.nh = chop(nh - nh.exp[t] - nh.larva + (N - maintenance(s) - (d-1))/20, 0, nh.max)
+    new.s = chop(increase(s, d), 0, s.max) # If d is between 2 and n+1, there is investment into increasing s
   } else { 
-    new.nh = chop((nh - nh.exp - nh.larva + N - maintenance(s) - (d-n-1)), 0 , nh.max)
-    new.s = chop((decrease(s, d)), 0, s.max) # If d is greater than n+1, there is  investment into decreasing s
+    new.nh = chop(nh - nh.exp[t] - nh.larva + (N - maintenance(s) - (d-n-1))/20, 0 , nh.max)
+    new.s = chop(decrease(s, d), 0, s.max) # If d is greater than n+1, there is  investment into decreasing s
   }
   output = data.frame(new.nh, new.s)
   return(output)
@@ -156,6 +162,7 @@ d.opt. <- melt(d.opt)
   names(d.opt.) <- c("time.step", "Nh", "sym.pop", "decision")
   d.opt.plot <- ggplot(data = d.opt., aes(time.step, sym.pop, fill = decision)) +
     geom_tile()+
+    facet_wrap(~Nh)+
     scale_fill_gradient(low = "#80CBC4", high = "#00695C")#+
 #    theme(axis.title.y.right = element_text("Nh"))
   
@@ -213,5 +220,5 @@ rss <- mean(squares)
 
 # save sum-of-squares
 save(rss, file = paste("Model_", model.version, "/rss.", model.name, ".RData", sep = ""))
-#print(proc.time() - ptm)
+print(proc.time() - ptm)
 }

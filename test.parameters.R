@@ -1,4 +1,4 @@
-model.version <- "6"
+model.version <- "7"
 model.name <- "test"
 nh.max <- 20
 ns.max <- 5
@@ -10,7 +10,7 @@ nh.crit <- 4
 #nh.crit.pupae <- 4
 #nh.crit.adult <- 4
 nh.transfer <- 0.6
-nh.exp <- 1
+#nh.exp <- 1
 #mh.pupae <- 1
 #mh.adult <- 2
 #ms.pupae <- 2
